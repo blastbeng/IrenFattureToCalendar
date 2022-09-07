@@ -15,6 +15,10 @@ Una volta create le chiavi OAuth possono essere scaricate e inserite all'interno
 
 Ora è possibile autorizzare le credenziali appena scaricate mediante ./authorize_credentials.sh
 
+*Avvio in locale*
+
+lancia ./launch.sh
+
 *Avvio con Docker*
 
 lancia ./build.sh per generare l'immagine docker e utilizza docker-compose up -d per avviare il progetto.
