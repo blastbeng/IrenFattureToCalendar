@@ -1,18 +1,20 @@
-# IrenFattureToCalendar
-Applicazione python per scaricare le fatture delle bollette non pagate e inserirle su google calendar (WORK IN PROGRESS)
+# IrenFattureToCalendar (WORK IN PROGRESS)
+Python App per scaricare dal sito IREN le fatture delle bollette non pagate e inserirle su google calendar
 
+# WORK IN PROGRESS - MOLTE FEATURE POTREBBERO NON FUNZIONARE
 
+L'app scarica le bollette ogni 24 ore.
 
 *Init*
 
-Per prima cosa devi creare il file .env (copia il file .env.example e modificalo)
-Successivamente è necessario generare le credentials oauth e inserirle all'interno di ./config/credentials.json
-Ora è possibile autorizzare le credenziali mediante ./authorize_credentials.sh
+Per prima cosa è necessario il file .env (copia il file .env.example e modificalo)
 
-*Compile*
+Successivamente è necessario creare un progetto su https://console.cloud.google.com 
+con relative chiavi OAuth https://console.cloud.google.com/apis/credentials/oauthclient  
+Una volta create le chiavi OAuth possono essere scaricate e inserite all'interno di ./config/credentials.json
 
-lancia ./build.sh per generare l'immagine docker
+Ora è possibile autorizzare le credenziali appena scaricate mediante ./authorize_credentials.sh
 
-*Launch*
+*Avvio con Docker*
 
-docker-compose up -d nella main dir
+lancia ./build.sh per generare l'immagine docker e utilizza docker-compose up -d per avviare il progetto.
