@@ -6,7 +6,7 @@ L'app scarica le bollette ogni 48 ore, parametro configurabile dal file .env
 Sono disponibili due endpoint per la login e per scaricare le bollette manualmente sotto:
 http://localhost:5085
 
-*Init*
+**Init**
 
 Per prima cosa è necessario il file .env (copia il file .env.example e modificalo)
 
@@ -16,10 +16,10 @@ Una volta create le chiavi OAuth possono essere scaricate e inserite all'interno
 
 Ora è possibile autorizzare le credenziali appena scaricate mediante ./authorize_credentials.sh
 
-*Avvio in locale*
+**Avvio in locale**
 
 lancia ./launch.sh
 
-*Avvio con Docker*
+**Avvio con Docker**
 
 lancia ./build.sh per generare l'immagine docker e utilizza docker-compose up -d per avviare il progetto.
