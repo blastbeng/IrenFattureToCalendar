@@ -4,6 +4,7 @@ import os
 import shelve
 import sqlite3
 import pickle
+import datetime
 from pathlib import Path
 from os.path import join, dirname
 from dotenv import load_dotenv
@@ -37,15 +38,15 @@ class IrenAuth():
       self.is_locked    = is_locked
 
 class IrenContracts():
-	def __init__(self, name, contract, expiry_date, issueDate, invoice_amount, amount_paid, residual_amount, state):
-	  self.name     	 = connametract
-	  self.contract     	 = contract
+	def __init__(self, name, contract, expiry_date, issue_date, invoice_amount, amount_paid, residual_amount, state):
+	  self.name     	        = name
+	  self.contract     	    = contract
 	  self.expiry_date        = expiry_date
 	  self.issue_date         = issue_date
 	  self.invoice_amount     = invoice_amount
 	  self.amount_paid        = amount_paid
 	  self.residual_amount    = residual_amount
-	  self.state             = state
+	  self.state              = state
 
 def check_temp_db_exists(): 
   fle = Path(TMP_DB)
@@ -248,48 +249,47 @@ def login():
     return iren_response.__dict__ 
 
 def fatture_to_calendar():
-
+  credentials = pickle.load(open("token.pkl", "rb"))
   service = build("calendar", "v3", credentials=credentials)
 
   login()
   bollette_resp = get_bollette()
   for fattura in bollette_resp.get('response'):
-    if fattura.get('state') != 'paid':
-      fattura = fattura.get('expiry_date').split(".")
-      data_fatt = fattura.get('expiry_date')
-      start_time = datetime(fattura[2], fattura[0], fattura[1], 9, 30, 0)
-      end_time = start_time + timedelta(hours=4)
-
-      summary = 'Iren Fattura: ' + fattura.get('name')
-      description = 'Contratto: ' + fattura.get('contract') + "\n"
-      description = description + "Importo: " + fattura.get('invoice_amount') + "\n"
-      description = description + "Pagato: " + fattura.get('amount_paid') + "\n"
-      description = description + "Residuo: " + fattura.get('residual_amount')
-
-      startTime = start_time.strftime("%Y-%m-%dT%H:%M:%S")
-      endTime = end_time.strftime("%Y-%m-%dT%H:%M:%S")
-      if not check_if_event_exists(summary, startTime, endTime):
-        event = {
-          'summary': summary,
-          'location': '',
-          'description': description,
-          'start': {
-            'dateTime': startTime,
-            'timeZone': TIMEZONE,
-          },
-          'end': {
-            'dateTime': endTime,
-            'timeZone': TIMEZONE,
-          },
-          'reminders': {
-            'useDefault': False,
-            'overrides': [
-              {'method': 'email', 'minutes': 24 * 60},
-              {'method': 'popup', 'minutes': 10},
-            ],
-          },
-        }
-        service.events().insert(calendarId=calendar_id, body=event).execute()
+    data_fatt = fattura.get('expiry_date').split(".")
+    start_time = datetime(int(data_fatt[2]), int(data_fatt[0]), int(data_fatt[1]), 9, 30, 0)
+    end_time = start_time + timedelta(hours=12)
+    summary = 'Pagare Bolletta Iren: ' + fattura.get('name')
+    description = 'Contratto: ' + fattura.get('contract') + "\n"
+    description = description + "Importo: " + fattura.get('invoice_amount') + "\n"
+    description = description + "Pagato: " + fattura.get('amount_paid') + "\n"
+    description = description + "Residuo: " + fattura.get('residual_amount')
+    startTime = start_time.strftime("%Y-%m-%dT%H:%M:%S")
+    endTime = end_time.strftime("%Y-%m-%dT%H:%M:%S")
+    id = check_if_event_exists(summary, startTime, endTime)
+    if id != None and fattura.get('state') == 'paid':
+      print(id)
+    elif fattura.get('state') == 'paid':
+      event = {
+        'summary': summary,
+        'location': '',
+        'description': description,
+        'start': {
+          'dateTime': startTime,
+          'timeZone': TIMEZONE,
+        },
+        'end': {
+          'dateTime': endTime,
+          'timeZone': TIMEZONE,
+        },
+        'reminders': {
+          'useDefault': False,
+          'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},
+            {'method': 'popup', 'minutes': 10},
+          ],
+        },
+      }
+      service.events().insert(calendarId=calendar_id, body=event).execute()
 
 def check_if_event_exists(summary: str, startTime: str, endTime: str):
   result = service.calendarList().list().execute()
@@ -297,7 +297,7 @@ def check_if_event_exists(summary: str, startTime: str, endTime: str):
   result = service.events().list(calendarId=calendar_id, timeZone=TIMEZONE).execute()
   for item in result['items']:
     if item['summary'] == summary and item['start']['dateTime'] == startTime and item['end']['datetime'] == endTime:
-      return False
-  return True
+      return item['id']
+  return None
 
 

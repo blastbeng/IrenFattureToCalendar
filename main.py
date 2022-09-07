@@ -53,6 +53,9 @@ class IrenBolletteClass(Resource):
 
 sched.add_job(iren.fatture_to_calendar, 'interval', hours=24, id="login")
 
+
+iren.fatture_to_calendar()
+
 if __name__ == '__main__':
   sched.start()
   cache.init_app(app)
