@@ -3,7 +3,6 @@ import logging
 import iren
 import requests
 import json
-import threading
 from flask import Flask, request, send_file, Response, jsonify
 from flask_restx import Api, Resource, reqparse
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -51,10 +50,10 @@ class IrenBolletteClass(Resource):
   def get(self):
     return jsonify(iren.get_bollette())
 
-sched.add_job(iren.fatture_to_calendar, 'interval', hours=24, id="login")
 
-
-iren.fatture_to_calendar()
+if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+  iren.fatture_to_calendar()
+  sched.add_job(iren.fatture_to_calendar, 'interval', hours=24, id="login")
 
 if __name__ == '__main__':
   sched.start()

@@ -4,7 +4,8 @@ import os
 import shelve
 import sqlite3
 import pickle
-import datetime
+import random
+from datetime import datetime, timedelta
 from pathlib import Path
 from os.path import join, dirname
 from dotenv import load_dotenv
@@ -192,6 +193,24 @@ def get_bollette():
         iren_response = IrenResponse("401", str(e), "KO", iren_contracts)
     return iren_response.__dict__
 
+def get_bollette_mock():
+    iren_response = IrenResponse(None, None, None, None)
+    code = "200"
+    description = "OK"
+    status = "OK"
+
+    contracts_array = []
+
+    for fattura in [0]:
+      state = 'paid'
+      #if random.randint(0, 1) == 0:
+      #  state = 'unpaid'
+      contracts_array.append(IrenContracts(str(fattura), str(fattura), '10.09.2022', '01.01.2021', '80', '80', '80', state).__dict__)
+                
+    iren_response = IrenResponse(code, description, status, contracts_array)
+
+    return iren_response.__dict__
+
 
 def login():
     iren_response = IrenResponse(None, None, None, None)
@@ -254,9 +273,10 @@ def fatture_to_calendar():
 
   login()
   bollette_resp = get_bollette()
+  #bollette_resp = get_bollette_mock()
   for fattura in bollette_resp.get('response'):
     data_fatt = fattura.get('expiry_date').split(".")
-    start_time = datetime(int(data_fatt[2]), int(data_fatt[0]), int(data_fatt[1]), 9, 30, 0)
+    start_time = datetime(int(data_fatt[2]), int(data_fatt[1]), int(data_fatt[0]), 9, 30, 0)
     end_time = start_time + timedelta(hours=12)
     summary = 'Pagare Bolletta Iren: ' + fattura.get('name')
     description = 'Contratto: ' + fattura.get('contract') + "\n"
@@ -265,10 +285,10 @@ def fatture_to_calendar():
     description = description + "Residuo: " + fattura.get('residual_amount')
     startTime = start_time.strftime("%Y-%m-%dT%H:%M:%S")
     endTime = end_time.strftime("%Y-%m-%dT%H:%M:%S")
-    id = check_if_event_exists(summary, startTime, endTime)
-    if id != None and fattura.get('state') == 'paid':
-      print(id)
-    elif fattura.get('state') == 'paid':
+    item_old = check_if_event_exists(summary, service)
+    if item_old != None and fattura.get('state') == 'paid':
+      service.events().delete(calendarId=GOOGLE_CALENDAR_EMAIL, eventId=item_old['id']).execute()
+    elif fattura.get('state') == 'unpaid':
       event = {
         'summary': summary,
         'location': '',
@@ -289,15 +309,13 @@ def fatture_to_calendar():
           ],
         },
       }
-      service.events().insert(calendarId=calendar_id, body=event).execute()
+      service.events().insert(calendarId=GOOGLE_CALENDAR_EMAIL, body=event).execute()
 
-def check_if_event_exists(summary: str, startTime: str, endTime: str):
-  result = service.calendarList().list().execute()
-  calendar_id = result['items'][0]['id']
-  result = service.events().list(calendarId=calendar_id, timeZone=TIMEZONE).execute()
+def check_if_event_exists(summary: str, service):
+  result = service.events().list(calendarId=GOOGLE_CALENDAR_EMAIL, timeZone=TIMEZONE).execute()
   for item in result['items']:
-    if item['summary'] == summary and item['start']['dateTime'] == startTime and item['end']['datetime'] == endTime:
-      return item['id']
+    if 'summary' in item and item['summary'] == summary:
+      return item
   return None
 
 
