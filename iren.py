@@ -20,8 +20,7 @@ LOGIN = os.environ.get("LOGIN")
 INVOICES = os.environ.get("INVOICES")
 TMP_DB = os.environ.get("TMP_DB")
 GOOGLE_CALENDAR_EMAIL = os.environ.get("GOOGLE_CALENDAR_EMAIL")
-REDIRECT_GOOGLE_HOST = os.environ.get("REDIRECT_GOOGLE_HOST")
-REDIRECT_GOOGLE_PORT = os.environ.get("REDIRECT_GOOGLE_PORT")
+TIMEZONE = os.environ.get("TIMEZONE")
 
 
 class IrenResponse():
@@ -155,7 +154,7 @@ def get_bollette():
                 'Accept': 'application/json, text/plain, */*',
                 'Accept-Language': 'it-IT,it;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Accept-Encoding': 'gzip, deflate, br',                
-                'Referer': 'https://clienti.irenyou.gruppoiren.it/spese',
+                'Referer': ENDPOINT+'/spese',
                 'Authorization': auth,
                 'Connection': 'keep-alive',
                 #'Cookie': '_gcl_au=1.1.1628190399.1662535402; _ga_6NHEWZX9FV=GS1.1.1662546681.3.1.1662546699.42.0.0; _ga=GA1.2.1834538257.1662535392; _gid=GA1.2.484135990.1662535395; G_ENABLED_IDPS=google; _hjSessionUser_1921754=eyJpZCI6IjBmNzEwMjU2LTgzNzQtNTc1Yi05ODBhLTY0ZWQwZTg0OWNiOCIsImNyZWF0ZWQiOjE2NjI1MzU0MTEzOTQsImV4aXN0aW5nIjp0cnVlfQ==; _hjIncludedInSessionSample=0; _iub_cs-43608930=%7B%22timestamp%22%3A%222022-09-07T07%3A23%3A30.972Z%22%2C%22version%22%3A%221.41.0%22%2C%22purposes%22%3A%7B%221%22%3Atrue%2C%222%22%3Atrue%2C%223%22%3Atrue%2C%224%22%3Atrue%2C%225%22%3Atrue%7D%2C%22id%22%3A%2243608930%22%2C%22cons%22%3A%7B%22rand%22%3A%22a9cdee%22%7D%7D; _gat_UA-101171608-6=1; _hjSession_1921754=eyJpZCI6IjZmMzlkYTk5LWExZjAtNGFlMy1iMDE2LWQzMzQwYjZhODc1ZiIsImNyZWF0ZWQiOjE2NjI1NDY2ODU2NTgsImluU2FtcGxlIjpmYWxzZX0=; _hjAbsoluteSessionInProgress=0',
@@ -211,10 +210,10 @@ def login():
                     'Accept': 'application/json, text/plain, */*',
                     'Accept-Language': 'it-IT,it;q=0.8,en-US;q=0.5,en;q=0.3',
                     'Accept-Encoding': 'gzip, deflate, br',
-                    'Referer': 'https://clienti.irenyou.gruppoiren.it',
+                    'Referer': ENDPOINT,
                     'Content-Type': 'application/json',
                     'Content-Length': '64',
-                    'Origin': 'https://clienti.irenyou.gruppoiren.it',
+                    'Origin': ENDPOINT,
                     'Connection': 'keep-alive',
                     #'Cookie': '_gcl_au=1.1.1628190399.1662535402; _ga_6NHEWZX9FV=GS1.1.1662535402.1.1.1662535410.52.0.0; _ga=GA1.2.1834538257.1662535392; _gid=GA1.2.484135990.1662535395; G_ENABLED_IDPS=google; _hjSessionUser_1921754=eyJpZCI6IjBmNzEwMjU2LTgzNzQtNTc1Yi05ODBhLTY0ZWQwZTg0OWNiOCIsImNyZWF0ZWQiOjE2NjI1MzU0MTEzOTQsImV4aXN0aW5nIjpmYWxzZX0=; _hjFirstSeen=1; _hjIncludedInSessionSample=0; _hjSession_1921754=eyJpZCI6Ijk1MDQ4NTc5LWMwYjYtNDUzYS1hYjFlLWQ5YmVkYWVmN2YyOCIsImNyZWF0ZWQiOjE2NjI1MzU0MTE1OTksImluU2FtcGxlIjpmYWxzZX0=; _hjAbsoluteSessionInProgress=0; _iub_cs-43608930=%7B%22timestamp%22%3A%222022-09-07T07%3A23%3A30.972Z%22%2C%22version%22%3A%221.41.0%22%2C%22purposes%22%3A%7B%221%22%3Atrue%2C%222%22%3Atrue%2C%223%22%3Atrue%2C%224%22%3Atrue%2C%225%22%3Atrue%7D%2C%22id%22%3A%2243608930%22%2C%22cons%22%3A%7B%22rand%22%3A%22a9cdee%22%7D%7D',
                     'Sec-Fetch-Dest': 'empty',
@@ -249,13 +248,6 @@ def login():
     return iren_response.__dict__ 
 
 def fatture_to_calendar():
-  scopes = ['https://www.googleapis.com/auth/calendar']
-
-
-  if not os.exists("config/token.pkl"):
-    raise Exception("config/token.pkl not found. Please run ./authorize_credentials first.")
-
-  credentials = pickle.load(open("config/token.pkl", "rb"))
 
   service = build("calendar", "v3", credentials=credentials)
 
@@ -267,31 +259,45 @@ def fatture_to_calendar():
       data_fatt = fattura.get('expiry_date')
       start_time = datetime(fattura[2], fattura[0], fattura[1], 9, 30, 0)
       end_time = start_time + timedelta(hours=4)
-      timezone = 'Europe/Rome'    
 
       summary = 'Iren Fattura: ' + fattura.get('name')
-      description = 'Contratto: ' + fattura.get('contract') + "\n";
-      description = description + "Importo: " + fattura.get('invoice_amount') + "\n";
-      description = description + "Pagato: " + fattura.get('amount_paid') + "\n";
-      description = description + "Residuo: " + fattura.get('residual_amount');
-        
-      event = {
-        'summary': summary,
-        'location': '',
-        'description': summary,
-        'start': {
-          'dateTime': start_time.strftime("%Y-%m-%dT%H:%M:%S"),
-          'timeZone': timezone,
-        },
-        'end': {
-          'dateTime': end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-          'timeZone': timezone,
-        },
-        'reminders': {
-          'useDefault': False,
-          'overrides': [
-            {'method': 'email', 'minutes': 24 * 60},
-            {'method': 'popup', 'minutes': 10},
-          ],
-        },
-      }
+      description = 'Contratto: ' + fattura.get('contract') + "\n"
+      description = description + "Importo: " + fattura.get('invoice_amount') + "\n"
+      description = description + "Pagato: " + fattura.get('amount_paid') + "\n"
+      description = description + "Residuo: " + fattura.get('residual_amount')
+
+      startTime = start_time.strftime("%Y-%m-%dT%H:%M:%S")
+      endTime = end_time.strftime("%Y-%m-%dT%H:%M:%S")
+      if not check_if_event_exists(summary, startTime, endTime):
+        event = {
+          'summary': summary,
+          'location': '',
+          'description': description,
+          'start': {
+            'dateTime': startTime,
+            'timeZone': TIMEZONE,
+          },
+          'end': {
+            'dateTime': endTime,
+            'timeZone': TIMEZONE,
+          },
+          'reminders': {
+            'useDefault': False,
+            'overrides': [
+              {'method': 'email', 'minutes': 24 * 60},
+              {'method': 'popup', 'minutes': 10},
+            ],
+          },
+        }
+        service.events().insert(calendarId=calendar_id, body=event).execute()
+
+def check_if_event_exists(summary: str, startTime: str, endTime: str):
+  result = service.calendarList().list().execute()
+  calendar_id = result['items'][0]['id']
+  result = service.events().list(calendarId=calendar_id, timeZone=TIMEZONE).execute()
+  for item in result['items']:
+    if item['summary'] == summary and item['start']['dateTime'] == startTime and item['end']['datetime'] == endTime:
+      return False
+  return True
+
+
