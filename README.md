@@ -1,4 +1,4 @@
-# IrenFattureToCalendar (WORK IN PROGRESS)
+# IrenFattureToCalendar
 Python App per scaricare dal sito IREN le fatture delle bollette non pagate e inserirle su google calendar
 
 L'app scarica le bollette ogni 48 ore, parametro configurabile dal file .env
