@@ -1,0 +1,13 @@
+python-dotenv
+werkzeug==2.1.2
+Flask~=2.1.2
+flask-restx==0.5.1
+click<8.1.0
+Flask-Caching==2.0.1
+requests
+apscheduler
+redis
+pysqlite3
+gcsa
+google-api-python-client
+datefinder

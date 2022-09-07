@@ -1,0 +1,25 @@
+---
+version: "3.3"
+services:
+  iren-fatture-to-calendar:
+    container_name: iren-fatture-to-calendar
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    image: "iren-fatture-to-calendar:latest"
+    restart: "no"
+    volumes:
+      - "./config:/app/config"
+    ports:
+      - 5080:5080
+    networks:
+      - caching
+  redis:
+    image: redis
+    container_name: iren-fatture-to-calendar-redis
+    networks:
+      - caching
+networks:
+  caching:
+    driver: bridge
