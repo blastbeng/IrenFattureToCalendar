@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-uwsgi --ini uwsgi.ini --enable-threads
+uwsgi --ini uwsgi.ini
