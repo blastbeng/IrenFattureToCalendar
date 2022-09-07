@@ -52,8 +52,9 @@ class IrenBolletteClass(Resource):
 
 
 if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+  iren.create_empty_tables()
   iren.fatture_to_calendar()
-  sched.add_job(iren.fatture_to_calendar, 'interval', hours=24, id="login")
+  sched.add_job(iren.fatture_to_calendar, 'interval', hours=int(os.environ['SCHEDULER_TIME']), id="login")
 
 if __name__ == '__main__':
   sched.start()
