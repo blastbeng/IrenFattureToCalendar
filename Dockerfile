@@ -39,7 +39,6 @@ RUN pip3 install -r requirements.txt
 #USER root
 WORKDIR /app
 
-COPY .env .
 COPY iren.py .
 COPY main.py .
 COPY uwsgi.ini .

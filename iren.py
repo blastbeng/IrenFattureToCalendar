@@ -268,7 +268,7 @@ def login():
     return iren_response.__dict__ 
 
 def fatture_to_calendar():
-  credentials = pickle.load(open("token.pkl", "rb"))
+  credentials = pickle.load(open("config/token.pkl", "rb"))
   service = build("calendar", "v3", credentials=credentials)
 
   login()

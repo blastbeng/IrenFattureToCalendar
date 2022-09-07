@@ -11,6 +11,8 @@ services:
     restart: "no"
     volumes:
       - "./config:/app/config"
+      - ".env:/app/.env"
+      - "/tmp/IrenFattureToCalendar:/tmp/IrenFattureToCalendar"
     ports:
       - 5085:5085
     networks:
