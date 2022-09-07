@@ -11,3 +11,4 @@ pysqlite3
 gcsa
 google-api-python-client
 datefinder
+uWSGI
