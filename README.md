@@ -14,4 +14,5 @@ Ora è possibile autorizzare le credenziali mediante ./authorize_credentials.sh
 lancia ./build.sh per generare l'immagine docker
 
 *Launch*
-docker-compose up -d
+
+docker-compose up -d nella main dir
