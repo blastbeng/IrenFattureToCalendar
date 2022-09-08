@@ -15,13 +15,3 @@ services:
       - "/tmp/IrenFattureToCalendar:/tmp/IrenFattureToCalendar"
     ports:
       - 5085:5085
-    networks:
-      - caching
-  redis:
-    image: redis
-    container_name: iren-fatture-to-calendar-redis
-    networks:
-      - caching
-networks:
-  caching:
-    driver: bridge

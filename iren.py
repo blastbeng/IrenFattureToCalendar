@@ -169,7 +169,10 @@ def get_bollette():
         )
         iren_contracts = [IrenContracts(None, None, None, None, None, None, None, None).__dict__]
         if r.status_code != 200 or not r.content:
-            iren_response = IrenResponse(str(r.status_code), "Iren API Error", "KO", iren_auth)
+            if r.reason:
+                iren_response = IrenResponse(str(r.status_code), r.reason, "KO", iren_contracts)
+            else:
+                iren_response = IrenResponse(str(r.status_code), "Iren API Error", "KO", iren_contracts)
         else:
             code = r.json().get('status').get('codice')
             description = r.json().get('status').get('descrizione')
@@ -177,7 +180,6 @@ def get_bollette():
             if(code == '000'):
                 data = r.json().get('data')
                 fatture = data.get('fatture')
-
                 contracts_array = []
 
                 for fattura in fatture:
@@ -280,9 +282,9 @@ def fatture_to_calendar():
     end_time = start_time + timedelta(hours=12)
     summary = 'Pagare Bolletta Iren: ' + fattura.get('name')
     description = 'Contratto: ' + fattura.get('contract') + "\n"
-    description = description + "Importo: " + fattura.get('invoice_amount') + "\n"
-    description = description + "Pagato: " + fattura.get('amount_paid') + "\n"
-    description = description + "Residuo: " + fattura.get('residual_amount')
+    description = description + "Importo: " + str(fattura.get('invoice_amount')) + "\n"
+    description = description + "Pagato: " + str(fattura.get('amount_paid')) + "\n"
+    description = description + "Residuo: " + str(fattura.get('residual_amount'))
     startTime = start_time.strftime("%Y-%m-%dT%H:%M:%S")
     endTime = end_time.strftime("%Y-%m-%dT%H:%M:%S")
     item_old = check_if_event_exists(summary, service)

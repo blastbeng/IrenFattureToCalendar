@@ -23,37 +23,24 @@ sched = BackgroundScheduler(timezone='Europe/Rome', executors=executors)
 
 
 app = Flask(__name__)
-config = {    
-    "CACHE_TYPE" : os.environ['CACHE_TYPE'],
-    "CACHE_REDIS_HOST" : os.environ['CACHE_REDIS_HOST'],
-    "CACHE_REDIS_PORT" : os.environ['CACHE_REDIS_PORT'],
-    "CACHE_REDIS_DB" : os.environ['CACHE_REDIS_DB'],
-    "CACHE_REDIS_URL" : os.environ['CACHE_REDIS_URL'],
-    "CACHE_DEFAULT_TIMEOUT" : os.environ['CACHE_DEFAULT_TIMEOUT']
-}
-
-app.config.from_mapping(config)
-cache = Cache(app)
 api = Api(app)
 
 nsiren = api.namespace('iren', 'Iren APIs')
 
 @nsiren.route('/login')
 class IrenLoginClass(Resource):
-  @cache.cached(timeout=60000, query_string=True)
   def get(self):
     return jsonify(iren.login())
 
 @nsiren.route('/bollette')
 class IrenBolletteClass(Resource):
-  @cache.cached(timeout=60000, query_string=True)
   def get(self):
     return jsonify(iren.get_bollette())
 
 
 if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
   iren.create_empty_tables()
-  iren.fatture_to_calendar()
+  #iren.fatture_to_calendar()
   sched.add_job(iren.fatture_to_calendar, 'interval', hours=int(os.environ['SCHEDULER_TIME']), id="login")
 
 if __name__ == '__main__':
