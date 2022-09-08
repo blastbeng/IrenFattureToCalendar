@@ -4,6 +4,7 @@ import os
 import shelve
 import sqlite3
 import pickle
+import logging
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -270,6 +271,7 @@ def login():
     return iren_response.__dict__ 
 
 def fatture_to_calendar():
+  logging.warn("--- START fatture_to_calendar ---")
   credentials = pickle.load(open("config/token.pkl", "rb"))
   service = build("calendar", "v3", credentials=credentials)
 
@@ -312,6 +314,7 @@ def fatture_to_calendar():
         },
       }
       service.events().insert(calendarId=GOOGLE_CALENDAR_EMAIL, body=event).execute()
+  logging.warn("--- END fatture_to_calendar ---")
 
 def check_if_event_exists(summary: str, service):
   result = service.events().list(calendarId=GOOGLE_CALENDAR_EMAIL, timeZone=TIMEZONE).execute()
